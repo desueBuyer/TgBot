@@ -16,7 +16,7 @@ func main() {
 	}
 
 	//создаем новый экземляр бота
-	bot := botInitializer(botToken)
+	bot := initBot(botToken)
 
 	//устанавливаем режим отладки
 	bot.Debug = true
@@ -24,12 +24,31 @@ func main() {
 	log.Print("Аторизован как %s", bot.Self.UserName)
 
 	//канал для получения обновлений
-	u := tgbotapi.NewUpdate(0)
-	u.Timeout = 60
+	u := initUpdatesConfig()
 
 	updates := bot.GetUpdatesChan(u)
 
 	//обработка входящих сообщений
+	proseccUpdates(bot, updates)
+}
+
+func initBot(token string) *tgbotapi.BotAPI {
+	bot, err := tgbotapi.NewBotAPI(token)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return bot
+}
+
+func initUpdatesConfig() tgbotapi.UpdateConfig {
+	u := tgbotapi.NewUpdate(0)
+	u.Timeout = 60
+	return u
+}
+
+func proseccUpdates(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 	for update := range updates {
 		if update.Message != nil { // проверка новго сообщения
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
@@ -43,14 +62,4 @@ func main() {
 			}
 		}
 	}
-}
-
-func botInitializer(token string) *tgbotapi.BotAPI {
-	bot, err := tgbotapi.NewBotAPI(token)
-
-	if err != nil {
-		log.Panic(err)
-	}
-
-	return bot
 }
