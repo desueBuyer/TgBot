@@ -10,21 +10,13 @@ import (
 func main() {
 
 	//получае токен бота из переменной окружения
-
 	botToken, exists := os.LookupEnv("BOT_API_KEY")
 	if !exists {
 		log.Fatal("BOT_API_KEY не найден")
 	}
 
-	if botToken == "" {
-		log.Fatal("BOT_API_KEY не установлен")
-	}
-
 	//создаем новый экземляр бота
-	bot, err := tgbotapi.NewBotAPI(botToken)
-	if err != nil {
-		log.Panic(err)
-	}
+	bot := botInitializer(botToken)
 
 	//устанавливаем режим отладки
 	bot.Debug = true
@@ -44,7 +36,6 @@ func main() {
 
 			// создаем ответное сообщение
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-			msg.ReplyToMessageID = update.Message.MessageID
 
 			// отправка сообщения
 			if _, err := bot.Send(msg); err != nil {
@@ -52,5 +43,14 @@ func main() {
 			}
 		}
 	}
+}
 
+func botInitializer(token string) *tgbotapi.BotAPI {
+	bot, err := tgbotapi.NewBotAPI(token)
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return bot
 }
