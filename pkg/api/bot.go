@@ -56,9 +56,10 @@ func processUpdates(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
 			responce := answer.CreateAnswer(update.Message.Text)
+
 			// создаем ответное сообщение
 			msg := tgbotapi.NewMessage(update.Message.Chat.ID, responce.AnswerMessage)
-			msg.ReplyMarkup = buildKeyboard()
+			msg.ReplyMarkup = buildReplyKeyboard()
 			// отправка сообщения
 			if _, err := bot.Send(msg); err != nil {
 				log.Panic(err)
@@ -67,7 +68,7 @@ func processUpdates(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 	}
 }
 
-func buildKeyboard() tgbotapi.ReplyKeyboardMarkup {
+func buildReplyKeyboard() tgbotapi.ReplyKeyboardMarkup {
 	keyboard := tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("Кнопка 1"),
@@ -75,6 +76,15 @@ func buildKeyboard() tgbotapi.ReplyKeyboardMarkup {
 		),
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("Кнопка 3"),
+		),
+	)
+	return keyboard
+}
+
+func buildInlineKeyboard() tgbotapi.InlineKeyboardMarkup {
+	keyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData("Кнопка 1 ", "Кнопка 1"),
 		),
 	)
 	return keyboard
