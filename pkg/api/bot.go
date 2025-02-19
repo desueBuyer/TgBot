@@ -4,6 +4,8 @@ import (
 	"log"
 	"os"
 
+	answer "tgbot/app/models"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
@@ -53,13 +55,27 @@ func processUpdates(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 		if update.Message != nil { // проверка новго сообщения
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
+			responce := answer.CreateAnswer(update.Message.Text)
 			// создаем ответное сообщение
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, update.Message.Text)
-
+			msg := tgbotapi.NewMessage(update.Message.Chat.ID, responce.AnswerMessage)
+			msg.ReplyMarkup = buildKeyboard()
 			// отправка сообщения
 			if _, err := bot.Send(msg); err != nil {
 				log.Panic(err)
 			}
 		}
 	}
+}
+
+func buildKeyboard() tgbotapi.ReplyKeyboardMarkup {
+	keyboard := tgbotapi.NewReplyKeyboard(
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("Кнопка 1"),
+			tgbotapi.NewKeyboardButton("Кнопка 2"),
+		),
+		tgbotapi.NewKeyboardButtonRow(
+			tgbotapi.NewKeyboardButton("Кнопка 3"),
+		),
+	)
+	return keyboard
 }
