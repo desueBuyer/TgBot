@@ -1,10 +1,11 @@
-package bot
+package api
 
 import (
+	"fmt"
 	"log"
 	"os"
-
-	answer "tgbot/app/models"
+	"strings"
+	"time"
 
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
@@ -23,7 +24,7 @@ func StartBot() {
 	//устанавливаем режим отладки
 	bot.Debug = true
 
-	log.Print("Аторизован как %s", bot.Self.UserName)
+	log.Printf("Аторизован как %s", bot.Self.UserName)
 
 	//канал для получения обновлений
 	u := initUpdatesConfig()
@@ -51,18 +52,64 @@ func initUpdatesConfig() tgbotapi.UpdateConfig {
 }
 
 func processUpdates(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
+
 	for update := range updates {
 		if update.Message != nil { // проверка новго сообщения
 			log.Printf("[%s] %s", update.Message.From.UserName, update.Message.Text)
 
-			responce := answer.CreateAnswer(update.Message.Text)
+			var msg tgbotapi.MessageConfig
 
-			// создаем ответное сообщение
-			msg := tgbotapi.NewMessage(update.Message.Chat.ID, responce.AnswerMessage)
-			msg.ReplyMarkup = buildReplyKeyboard()
+			switch update.Message.Text {
+			default:
+				{
+					msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Неизвестная команда")
+					msg.ReplyMarkup = buildReplyKeyboard()
+				}
+			case "Погода":
+				{
+					msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Выберите город")
+					msg.ReplyMarkup = buildInlineKeyboardWeatherCity()
+				}
+			}
 			// отправка сообщения
 			if _, err := bot.Send(msg); err != nil {
 				log.Panic(err)
+			}
+		} else {
+			callbackData := update.CallbackQuery.Data
+			arr := strings.Split(callbackData, ":")
+			switch arr[0] {
+			case "weatherCity":
+				{
+					msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Выберите дату")
+					msg.ReplyMarkup = buildInlineKeyboardWeatherDate(callbackData)
+					// отправка сообщения
+					deleteMsg := tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID)
+					bot.Send(deleteMsg)
+					if _, err := bot.Send(msg); err != nil {
+						log.Panic(err)
+					}
+				}
+			case "weatherDate":
+				{
+					arr = strings.Split(callbackData, ";")
+					res := GetWeatherforecast(strings.Split(arr[1], ":")[1], strings.Split(arr[0], ":")[1])
+					msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, res)
+					msg.ReplyMarkup = buildInlineKeyboardWeatherDate(callbackData)
+					deleteMsg := tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID)
+					bot.Send(deleteMsg)
+					if _, err := bot.Send(msg); err != nil {
+						log.Panic(err)
+					}
+				}
+			default:
+				{
+					msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, "Неизвестная команда")
+					msg.ReplyMarkup = buildReplyKeyboard()
+					if _, err := bot.Send(msg); err != nil {
+						log.Panic(err)
+					}
+				}
 			}
 		}
 	}
@@ -71,7 +118,7 @@ func processUpdates(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 func buildReplyKeyboard() tgbotapi.ReplyKeyboardMarkup {
 	keyboard := tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
-			tgbotapi.NewKeyboardButton("Кнопка 1"),
+			tgbotapi.NewKeyboardButton("Погода"),
 			tgbotapi.NewKeyboardButton("Кнопка 2"),
 		),
 		tgbotapi.NewKeyboardButtonRow(
@@ -81,10 +128,25 @@ func buildReplyKeyboard() tgbotapi.ReplyKeyboardMarkup {
 	return keyboard
 }
 
-func buildInlineKeyboard() tgbotapi.InlineKeyboardMarkup {
+func buildInlineKeyboardWeatherCity() tgbotapi.InlineKeyboardMarkup {
 	keyboard := tgbotapi.NewInlineKeyboardMarkup(
 		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Кнопка 1 ", "Кнопка 1"),
+			tgbotapi.NewInlineKeyboardButtonData("Москва", "weatherCity:Moscow"),
+		),
+	)
+	return keyboard
+}
+
+func buildInlineKeyboardWeatherDate(city string) tgbotapi.InlineKeyboardMarkup {
+
+	now := time.Now()
+	keyboard := tgbotapi.NewInlineKeyboardMarkup(
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData(now.Format("02.01.2006"), fmt.Sprintf("weatherDate:%s;%s", now.Format("2006-01-02"), city)),
+			tgbotapi.NewInlineKeyboardButtonData(now.AddDate(0, 0, 1).Format("02.01.2006"), fmt.Sprintf("weatherDate:%s;%s", now.AddDate(0, 0, 1).Format("2006-01-02"), city)),
+		),
+		tgbotapi.NewInlineKeyboardRow(
+			tgbotapi.NewInlineKeyboardButtonData(now.AddDate(0, 0, 2).Format("02.01.2006"), fmt.Sprintf("weatherDate:%s;%s", now.AddDate(0, 0, 2).Format("2006-01-02"), city)),
 		),
 	)
 	return keyboard
