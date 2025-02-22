@@ -8,7 +8,7 @@ import (
 	"os"
 )
 
-func GetWeatherforecast() {
+func GetWeatherforecast(city string, date string) string {
 
 	variant, existance := os.LookupEnv("WEATHER_API_KEY")
 
@@ -16,7 +16,7 @@ func GetWeatherforecast() {
 		log.Fatal("Не найден API ключ для получения прогноза погоды")
 	}
 
-	url := fmt.Sprintf("https://api.weatherapi.com/v1/forecast.json?q=Moscow&days=2&dt=2025-02-25&key=%s", variant)
+	url := fmt.Sprintf("https://api.weatherapi.com/v1/forecast.json?q=%s&days=2&dt=%s&key=%s", city, date, variant)
 
 	//выполнение запроса
 	resp, err := http.Get(url)
@@ -31,5 +31,5 @@ func GetWeatherforecast() {
 		fmt.Println("Ошибка при чтении ответа: ", err)
 	}
 
-	fmt.Print(string(body))
+	return string(body)
 }
