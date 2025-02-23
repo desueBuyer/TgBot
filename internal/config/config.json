@@ -1,0 +1,33 @@
+{
+    "appName":"tgbot",
+    "version":"1.0.0",
+    "environment":"dev",
+    "debug":true,
+    "systemVariables":
+    [
+        {
+            "botApiKey":"BOT_API_KEY",
+            "weatherApiKey":"WEATHER_API_KEY"
+        }
+    ],
+    "botSettings":
+    [
+        {
+            "weatherCities":
+            [
+                {
+                    "button":"Москва",
+                    "value":"Moscow"
+                },
+                {
+                    "button":"Санкт-петербург",
+                    "value":"Saint Petersburg"
+                },
+                {
+                    "button":"Екатеринбург",
+                    "value":"Ekaterinburg"
+                }
+            ]
+        }
+    ]
+}
