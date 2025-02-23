@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	utils "tgbot/internal/utils"
 )
 
 func GetWeatherforecast(city string, date string) string {
@@ -21,15 +22,17 @@ func GetWeatherforecast(city string, date string) string {
 	//выполнение запроса
 	resp, err := http.Get(url)
 	if err != nil {
-		fmt.Println("Ошибка при выполнении запроса: ", err)
+		log.Fatal("Ошибка при выполнении запроса: ", err)
 	}
 	defer resp.Body.Close()
 
 	//чтение ответа
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		fmt.Println("Ошибка при чтении ответа: ", err)
+		log.Fatal("Ошибка при чтении ответа: ", err)
 	}
 
-	return string(body)
+	res := utils.ParceWeatherJson(string(body))
+
+	return res
 }
