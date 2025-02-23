@@ -7,12 +7,15 @@ import (
 	"strings"
 	"time"
 
+	utils "tgbot/internal/utils"
+
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api/v5"
 )
 
 type Bot struct {
 	Api     *tgbotapi.BotAPI
 	Updates tgbotapi.UpdatesChannel
+	Config  utils.Config
 }
 
 func (bot *Bot) initBot(apiKeyEnvVariant string) {
@@ -69,7 +72,7 @@ func (bot *Bot) processMessage(update tgbotapi.Update) {
 	case "Погода":
 		{
 			msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Выберите город")
-			msg.ReplyMarkup = buildInlineKeyboardWeatherCity()
+			msg.ReplyMarkup = buildInlineKeyboardWeatherCity(bot.Config.BotSettings[0].WeatherCities)
 		}
 	}
 	// отправка сообщения
@@ -116,9 +119,10 @@ func (bot *Bot) processCallbackQuery(update tgbotapi.Update) {
 	}
 }
 
-func RunBot() {
+func RunBot(config utils.Config) {
 
 	bot := new(Bot)
+	bot.Config = config
 	bot.initBot("BOT_API_KEY")
 	bot.initUpdatesChannel()
 	bot.loopThroughUpdates()
@@ -137,12 +141,11 @@ func buildReplyKeyboard() tgbotapi.ReplyKeyboardMarkup {
 	return keyboard
 }
 
-func buildInlineKeyboardWeatherCity() tgbotapi.InlineKeyboardMarkup {
-	keyboard := tgbotapi.NewInlineKeyboardMarkup(
-		tgbotapi.NewInlineKeyboardRow(
-			tgbotapi.NewInlineKeyboardButtonData("Москва", "weatherCity:Moscow"),
-		),
-	)
+func buildInlineKeyboardWeatherCity(weatherCities []utils.WeatherCity) tgbotapi.InlineKeyboardMarkup {
+	keyboard := tgbotapi.NewInlineKeyboardMarkup()
+	for _, data := range weatherCities {
+		keyboard.InlineKeyboard = append(keyboard.InlineKeyboard, tgbotapi.NewInlineKeyboardRow(tgbotapi.NewInlineKeyboardButtonData(data.Button, "weatherCity:"+data.Value)))
+	}
 	return keyboard
 }
 
