@@ -1,9 +1,9 @@
 package main
 
 import (
-	bot "tgbot/pkg/api"
+	api "tgbot/pkg/api"
 )
 
 func main() {
-	bot.StartBot()
+	api.RunBot()
 }
