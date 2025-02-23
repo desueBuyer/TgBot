@@ -95,7 +95,7 @@ func processUpdates(bot *tgbotapi.BotAPI, updates tgbotapi.UpdatesChannel) {
 					arr = strings.Split(callbackData, ";")
 					res := GetWeatherforecast(strings.Split(arr[1], ":")[1], strings.Split(arr[0], ":")[1])
 					msg := tgbotapi.NewMessage(update.CallbackQuery.Message.Chat.ID, res)
-					msg.ReplyMarkup = buildInlineKeyboardWeatherDate(callbackData)
+					msg.ReplyMarkup = nil
 					deleteMsg := tgbotapi.NewDeleteMessage(update.CallbackQuery.Message.Chat.ID, update.CallbackQuery.Message.MessageID)
 					bot.Send(deleteMsg)
 					if _, err := bot.Send(msg); err != nil {
