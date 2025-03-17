@@ -74,6 +74,10 @@ func (bot *Bot) processMessage(update tgbotapi.Update) {
 			msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Выберите город")
 			msg.ReplyMarkup = buildInlineKeyboardWeatherCity(bot.Config.BotSettings[0].WeatherCities)
 		}
+	case "Курсы валют":
+		{
+			msg = tgbotapi.NewMessage(update.Message.Chat.ID, "Заглушка")
+		}
 	}
 	// отправка сообщения
 	if _, err := bot.Api.Send(msg); err != nil {
@@ -132,7 +136,7 @@ func buildReplyKeyboard() tgbotapi.ReplyKeyboardMarkup {
 	keyboard := tgbotapi.NewReplyKeyboard(
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("Погода"),
-			tgbotapi.NewKeyboardButton("Кнопка 2"),
+			tgbotapi.NewKeyboardButton("Курсы валют"),
 		),
 		tgbotapi.NewKeyboardButtonRow(
 			tgbotapi.NewKeyboardButton("Кнопка 3"),
